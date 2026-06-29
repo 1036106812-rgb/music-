@@ -1,0 +1,384 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>Jazz Rain Timer</title>
+  <style>
+    * {
+      box-sizing: border-box;
+    }
+
+    body {
+      margin: 0;
+      min-height: 100vh;
+      font-family: Arial, sans-serif;
+      color: #fff;
+      background:
+        linear-gradient(rgba(20, 16, 12, 0.45), rgba(20, 16, 12, 0.6)),
+        url("assets/images/cafe-bg.jpg") center center / cover no-repeat fixed;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      padding: 24px;
+    }
+
+    .app {
+      width: 100%;
+      max-width: 920px;
+      background: rgba(20, 18, 16, 0.55);
+      backdrop-filter: blur(10px);
+      border: 1px solid rgba(255,255,255,0.12);
+      border-radius: 24px;
+      padding: 28px;
+      box-shadow: 0 20px 60px rgba(0,0,0,0.35);
+    }
+
+    h1 {
+      margin: 0 0 8px;
+      font-size: 2rem;
+      text-align: center;
+      letter-spacing: 0.5px;
+    }
+
+    .subtitle {
+      text-align: center;
+      margin: 0 0 24px;
+      color: rgba(255,255,255,0.82);
+      font-size: 0.98rem;
+    }
+
+    .layout {
+      display: grid;
+      grid-template-columns: 1.15fr 0.85fr;
+      gap: 20px;
+    }
+
+    .card {
+      background: rgba(255,255,255,0.08);
+      border: 1px solid rgba(255,255,255,0.12);
+      border-radius: 20px;
+      padding: 20px;
+    }
+
+    .timer-display {
+      font-size: 5rem;
+      font-weight: bold;
+      text-align: center;
+      letter-spacing: 2px;
+      margin: 18px 0 10px;
+    }
+
+    .session-label {
+      text-align: center;
+      color: rgba(255,255,255,0.8);
+      margin-bottom: 18px;
+      font-size: 1rem;
+    }
+
+    .preset-row,
+    .control-row {
+      display: flex;
+      gap: 10px;
+      flex-wrap: wrap;
+      justify-content: center;
+      margin-bottom: 14px;
+    }
+
+    button {
+      border: none;
+      border-radius: 14px;
+      padding: 12px 16px;
+      font-size: 0.98rem;
+      cursor: pointer;
+      background: rgba(255,255,255,0.14);
+      color: #fff;
+      transition: 0.2s ease;
+    }
+
+    button:hover {
+      background: rgba(255,255,255,0.22);
+      transform: translateY(-1px);
+    }
+
+    button.primary {
+      background: #9b6b43;
+    }
+
+    button.primary:hover {
+      background: #b07a4e;
+    }
+
+    .info-box {
+      margin-top: 12px;
+      text-align: center;
+      color: rgba(255,255,255,0.8);
+      font-size: 0.95rem;
+    }
+
+    .music-title {
+      font-size: 1.05rem;
+      font-weight: bold;
+      margin-bottom: 10px;
+    }
+
+    .small {
+      color: rgba(255,255,255,0.8);
+      font-size: 0.92rem;
+      margin-bottom: 14px;
+    }
+
+    .slider-group {
+      margin: 14px 0 18px;
+    }
+
+    .slider-group label {
+      display: flex;
+      justify-content: space-between;
+      margin-bottom: 8px;
+      font-size: 0.95rem;
+      color: rgba(255,255,255,0.9);
+    }
+
+    input[type="range"] {
+      width: 100%;
+      accent-color: #b07a4e;
+    }
+
+    .track-list {
+      margin-top: 10px;
+      padding-left: 18px;
+      color: rgba(255,255,255,0.84);
+      line-height: 1.8;
+    }
+
+    .footer-note {
+      margin-top: 18px;
+      color: rgba(255,255,255,0.72);
+      font-size: 0.88rem;
+      line-height: 1.6;
+    }
+
+    @media (max-width: 780px) {
+      .layout {
+        grid-template-columns: 1fr;
+      }
+
+      .timer-display {
+        font-size: 4rem;
+      }
+
+      .app {
+        padding: 18px;
+      }
+    }
+  </style>
+</head>
+<body>
+  <div class="app">
+    <h1>Jazz Rain Timer</h1>
+    <p class="subtitle">A café study timer with rotating jazz tracks and rain ambience.</p>
+
+    <div class="layout">
+      <div class="card">
+        <div class="session-label" id="sessionLabel">Focus Session</div>
+        <div class="timer-display" id="timer">25:00</div>
+
+        <div class="preset-row">
+          <button onclick="setPreset(25, 'Focus Session')">25 min</button>
+          <button onclick="setPreset(50, 'Deep Work')">50 min</button>
+          <button onclick="setPreset(90, 'Long Session')">90 min</button>
+          <button onclick="setPreset(5, 'Short Break')">5 min</button>
+          <button onclick="setPreset(15, 'Long Break')">15 min</button>
+        </div>
+
+        <div class="control-row">
+          <button class="primary" onclick="startTimer()">Start</button>
+          <button onclick="pauseTimer()">Pause</button>
+          <button onclick="resetTimer()">Reset</button>
+        </div>
+
+        <div class="info-box" id="statusText">
+          Ready to begin.
+        </div>
+      </div>
+
+      <div class="card">
+        <div class="music-title">Now Playing</div>
+        <div class="small" id="currentTrack">Track: Jazz 1</div>
+
+        <div class="control-row" style="justify-content:flex-start;">
+          <button class="primary" onclick="playAllAudio()">Play ambience</button>
+          <button onclick="pauseAllAudio()">Pause ambience</button>
+          <button onclick="nextTrack()">Next jazz track</button>
+        </div>
+
+        <div class="slider-group">
+          <label>
+            <span>Jazz volume</span>
+            <span id="jazzVolumeValue">70%</span>
+          </label>
+          <input type="range" id="jazzVolume" min="0" max="100" value="70" />
+        </div>
+
+        <div class="slider-group">
+          <label>
+            <span>Rain volume</span>
+            <span id="rainVolumeValue">40%</span>
+          </label>
+          <input type="range" id="rainVolume" min="0" max="100" value="40" />
+        </div>
+
+        <div class="small">Jazz playlist rotates automatically when one track ends.</div>
+
+        <ol class="track-list">
+          <li>Jazz 1</li>
+          <li>Jazz 2</li>
+          <li>Jazz 3</li>
+        </ol>
+
+        <div class="footer-note">
+          Tip: on GitHub Pages, audio may need one click from you before autoplay works.
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <!-- Audio -->
+  <audio id="rainAudio" loop>
+    <source src="assets/audio/rain.mp3" type="audio/mpeg" />
+  </audio>
+
+  <audio id="jazzAudio">
+    <source src="" type="audio/mpeg" />
+  </audio>
+
+  <script>
+    // ===== Timer =====
+    let timer;
+    let totalSeconds = 25 * 60;
+    let remainingSeconds = totalSeconds;
+    let currentLabel = "Focus Session";
+    let isRunning = false;
+
+    const timerEl = document.getElementById("timer");
+    const sessionLabelEl = document.getElementById("sessionLabel");
+    const statusTextEl = document.getElementById("statusText");
+
+    function updateTimerDisplay() {
+      const minutes = Math.floor(remainingSeconds / 60);
+      const seconds = remainingSeconds % 60;
+      timerEl.textContent =
+        String(minutes).padStart(2, "0") + ":" + String(seconds).padStart(2, "0");
+    }
+
+    function setPreset(minutes, label) {
+      pauseTimer();
+      totalSeconds = minutes * 60;
+      remainingSeconds = totalSeconds;
+      currentLabel = label;
+      sessionLabelEl.textContent = label;
+      statusTextEl.textContent = "Preset changed to " + label + ".";
+      updateTimerDisplay();
+    }
+
+    function startTimer() {
+      if (isRunning) return;
+
+      isRunning = true;
+      statusTextEl.textContent = currentLabel + " is running...";
+      playAllAudio();
+
+      timer = setInterval(() => {
+        if (remainingSeconds > 0) {
+          remainingSeconds--;
+          updateTimerDisplay();
+        } else {
+          clearInterval(timer);
+          isRunning = false;
+          statusTextEl.textContent = currentLabel + " finished.";
+          alert(currentLabel + " finished.");
+        }
+      }, 1000);
+    }
+
+    function pauseTimer() {
+      clearInterval(timer);
+      isRunning = false;
+      statusTextEl.textContent = currentLabel + " paused.";
+    }
+
+    function resetTimer() {
+      clearInterval(timer);
+      isRunning = false;
+      remainingSeconds = totalSeconds;
+      updateTimerDisplay();
+      statusTextEl.textContent = currentLabel + " reset.";
+    }
+
+    updateTimerDisplay();
+
+    // ===== Audio =====
+    const rainAudio = document.getElementById("rainAudio");
+    const jazzAudio = document.getElementById("jazzAudio");
+    const currentTrackEl = document.getElementById("currentTrack");
+
+    const jazzTracks = [
+      { name: "Jazz 1", src: "assets/audio/jazz1.mp3" },
+      { name: "Jazz 2", src: "assets/audio/jazz2.mp3" },
+      { name: "Jazz 3", src: "assets/audio/jazz3.mp3" }
+    ];
+
+    let trackIndex = 0;
+
+    function loadTrack(index) {
+      trackIndex = index % jazzTracks.length;
+      jazzAudio.src = jazzTracks[trackIndex].src;
+      currentTrackEl.textContent = "Track: " + jazzTracks[trackIndex].name;
+    }
+
+    function nextTrack() {
+      loadTrack((trackIndex + 1) % jazzTracks.length);
+      jazzAudio.play().catch(() => {});
+    }
+
+    jazzAudio.addEventListener("ended", () => {
+      nextTrack();
+    });
+
+    function playAllAudio() {
+      rainAudio.play().catch(() => {});
+      jazzAudio.play().catch(() => {});
+    }
+
+    function pauseAllAudio() {
+      rainAudio.pause();
+      jazzAudio.pause();
+    }
+
+    loadTrack(0);
+
+    // ===== Volume =====
+    const jazzVolumeSlider = document.getElementById("jazzVolume");
+    const rainVolumeSlider = document.getElementById("rainVolume");
+    const jazzVolumeValue = document.getElementById("jazzVolumeValue");
+    const rainVolumeValue = document.getElementById("rainVolumeValue");
+
+    function updateVolumes() {
+      const jazzValue = jazzVolumeSlider.value / 100;
+      const rainValue = rainVolumeSlider.value / 100;
+
+      jazzAudio.volume = jazzValue;
+      rainAudio.volume = rainValue;
+
+      jazzVolumeValue.textContent = jazzVolumeSlider.value + "%";
+      rainVolumeValue.textContent = rainVolumeSlider.value + "%";
+    }
+
+    jazzVolumeSlider.addEventListener("input", updateVolumes);
+    rainVolumeSlider.addEventListener("input", updateVolumes);
+
+    updateVolumes();
+  </script>
+</body>
+</html>
